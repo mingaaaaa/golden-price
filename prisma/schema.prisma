@@ -1,0 +1,60 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 黄金价格数据表
+model GoldPrice {
+  id            Int      @id @default(autoincrement())
+  price         Float     // 当前价格
+  openPrice     Float     // 开盘价
+  highPrice     Float     // 最高价
+  lowPrice      Float     // 最低价
+  buyPrice      Float     // 买入价
+  sellPrice     Float     // 卖出价
+  changePercent Float     // 涨跌幅（%）
+  changeAmount  Float     // 涨跌额
+  volume        Int?      // 成交量（可选）
+  collectedAt   DateTime @unique // 采集时间（唯一索引，防重）
+  createdAt     DateTime @default(now())
+
+  @@index([collectedAt])
+  @@index([createdAt])
+}
+
+// 钉钉推送记录表
+model PushLog {
+  id        Int      @id @default(autoincrement())
+  type      String   // 推送类型: "hourly", "alert", "daily", "error"
+  content   String   // 推送内容
+  success   Boolean  // 是否成功
+  error     String?  // 错误信息（如果有）
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([type])
+}
+
+// 预警配置表（全局共享，所有用户共用一个配置）
+model AlertConfig {
+  id        Int      @id @default(autoincrement())
+  highPrice Float?   // 高位预警价格（null表示不启用）
+  lowPrice  Float?   // 低位预警价格（null表示不启用）
+  enabled   Boolean  @default(true) // 预警开关
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
+// 系统配置表（可选，用于存储动态配置）
+model SystemConfig {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}

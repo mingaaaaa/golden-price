@@ -1,0 +1,35 @@
+// 黄金价格数据类型
+export interface GoldPriceData {
+  price: number;           // 当前价格
+  openPrice: number;       // 开盘价
+  highPrice: number;       // 最高价
+  lowPrice: number;        // 最低价
+  buyPrice: number;        // 买入价
+  sellPrice: number;       // 卖出价
+  changePercent: number;   // 涨跌幅（%）
+  changeAmount: number;    // 涨跌额
+  volume?: number;         // 成交量（可选）
+  collectedAt: Date;       // 采集时间
+}
+
+// API响应类型
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: string;
+}
+
+// 推送类型
+export type PushType = 'hourly' | 'alert' | 'daily' | 'error';
+
+// 预警配置类型
+export interface AlertConfigData {
+  id?: number;
+  highPrice?: number | null;
+  lowPrice?: number | null;
+  enabled: boolean;
+}
+
+// 预警类型
+export type AlertType = 'high' | 'low';
