@@ -248,8 +248,9 @@ const scheduledJobs = new Map<string, schedule.Job>();
  * 初始化所有定时任务
  */
 export function initScheduler(): void {
-  // 检查是否启用定时任务
-  const enableScheduler = process.env.ENABLE_SCHEDULER === 'true';
+  // 检查是否启用定时任务（兼容 PM2 的布尔值和字符串值）
+  const envValue = String(process.env.ENABLE_SCHEDULER);
+  const enableScheduler = envValue === 'true' || envValue === '1';
 
   if (!enableScheduler) {
     console.log('定时任务未启用（ENABLE_SCHEDULER=false）');
