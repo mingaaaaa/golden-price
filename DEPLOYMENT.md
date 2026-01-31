@@ -52,8 +52,8 @@ cd /path/to/golden-price
 pnpm prisma:generate
 
 # 2. 创建生产环境数据库文件并执行迁移
-# 方法 A：使用 prisma migrate（推荐）
-pnpm prisma:migrate
+# 方法 A：使用 prisma migrate deploy（推荐）
+npx prisma migrate deploy
 
 # 如果方法 A 失败，使用方法 B：直接推送 schema
 # npx prisma db push --skip-generate
@@ -213,10 +213,10 @@ rm -f prisma/prod.db
 2. 重新创建数据库：
 
 ```bash
-# 方法 A：创建迁移
+# 方法 A：创建迁移（仅开发环境）
 npx prisma migrate dev --name init
 
-# 方法 B：直接推送 schema（更简单）
+# 方法 B：直接推送 schema（生产环境推荐）
 npx prisma db push
 ```
 
