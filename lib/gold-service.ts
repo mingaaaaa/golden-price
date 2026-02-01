@@ -59,16 +59,18 @@ function parsePriceData(rawData: string): GoldPriceData | null {
       return null;
     }
 
-    // 解析字段（根据huilvbiao.com API的实际格式）
-    const price = parseFloat(fields[0]);      // 当前价格
-    const buyPrice = parseFloat(fields[2]);   // 买入价
-    const sellPrice = parseFloat(fields[3]);  // 卖出价
-    const lastClose = parseFloat(fields[4]);  // 昨收价
-    const lowPrice = parseFloat(fields[5]);   // 最低价
+    // 解析字段（根据新浪财经API的实际格式）
+    const price = parseFloat(fields[0]);      // 最新价
+    const buyPrice = parseFloat(fields[1]);   // 买价（买一价）
+    const sellPrice = parseFloat(fields[2]);  // 卖价（卖一价）
+    const openPrice = parseFloat(fields[3]);  // 今开
+    const highPrice = parseFloat(fields[4]);  // 最高
+    const lowPrice = parseFloat(fields[5]);   // 最低
     const time = fields[6];                    // 时间 HH:MM:SS
-    const highPrice = parseFloat(fields[7]);  // 最高价
-    const openPrice = parseFloat(fields[8]);  // 开盘价
-    const volume = parseInt(fields[9], 10);    // 成交量
+    const lastClose = parseFloat(fields[7]);  // 昨收
+    // fields[8] 结算价（暂不使用）
+    const volume = parseInt(fields[9], 10);   // 成交量
+    // fields[10][11] 涨跌额、涨跌幅（数据可能不准确，下面重新计算）
 
     // 计算涨跌额和涨跌幅
     const changeAmount = price - lastClose;
