@@ -175,6 +175,23 @@ export async function sendErrorAlert(errorMessage: string): Promise<boolean> {
 }
 
 /**
+ * 发送黄金金店价格采集失败告警（消息包含"黄金"关键词）
+ */
+export async function sendShopPriceAlert(error: string): Promise<boolean> {
+  const content = `⚠️ 黄金金店价格采集失败告警
+
+错误信息：${error}
+时间：${new Date().toLocaleString('zh-CN', { hour12: false })}
+
+请检查网站访问状态或手动触发采集`;
+
+  const success = await sendDingTalkMessage(content);
+  await logPush('error', content, success, success ? undefined : '发送失败');
+
+  return success;
+}
+
+/**
  * 获取推送统计（最近N条）
  */
 export async function getPushStats(limit: number = 100) {

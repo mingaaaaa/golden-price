@@ -58,3 +58,15 @@ model SystemConfig {
   value     String
   updatedAt DateTime @updatedAt
 }
+
+// 金店价格表（每天一条记录，包含所有品牌价格）
+model GoldShopPrice {
+  id          Int      @id @default(autoincrement())
+  date        String   @unique // 日期 YYYY-MM-DD（唯一索引，每天一条记录）
+  prices      String            // JSON字符串存储所有品牌价格数据（SQLite不支持Json类型）
+  collectedAt DateTime @default(now()) // 采集时间
+  createdAt   DateTime @default(now())
+
+  @@index([date])
+  @@index([collectedAt])
+}

@@ -34,3 +34,22 @@ export interface AlertConfigData {
 
 // 预警类型
 export type AlertType = 'high' | 'low';
+
+// 单个金店价格数据类型
+export interface GoldShopBrandPrice {
+  brandName: string;
+  goldPrice: number;
+  platinumPrice?: number;
+  barPrice?: number;
+  unit: string;
+  updateDate: string; // 更新日期（YYYY-MM-DD）
+}
+
+// 金店价格记录类型（日期+所有品牌价格）
+export interface GoldShopPriceRecord {
+  id: number;
+  date: string; // YYYY-MM-DD
+  prices: GoldShopBrandPrice[];
+  collectedAt: Date;
+  createdAt: Date;
+}

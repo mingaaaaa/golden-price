@@ -1,6 +1,7 @@
 import * as schedule from 'node-schedule';
 import { fetchRealtimePrice, savePriceData, getTodayStats, cleanupOldData } from './gold-service';
-import { sendHourlyReport, sendDailyReport, sendAlert, sendErrorAlert } from './dingtalk';
+import { fetchGoldShopPrices, saveGoldShopPrices, validateGoldShopBrandPrice, cleanupOldShopPrices } from './gold-shop-scraper';
+import { sendHourlyReport, sendDailyReport, sendAlert, sendErrorAlert, sendShopPriceAlert as sendShopPriceAlertDingTalk } from './dingtalk';
 import { prisma } from './db';
 
 // 任务锁（简单的内存锁）
@@ -46,7 +47,12 @@ async function incrementFailureAndCheck(taskName: string, error: string): Promis
   console.error(`任务 ${taskName} 失败 (${currentCount}/${MAX_FAILURES}): ${error}`);
 
   if (currentCount >= MAX_FAILURES) {
-    await sendErrorAlert(`${taskName}: ${error}`);
+    // 针对金店价格采集任务使用专门的告警（包含"黄金"关键词）
+    if (taskName === 'collectGoldShopPrices') {
+      await sendShopPriceAlertDingTalk(error);
+    } else {
+      await sendErrorAlert(`${taskName}: ${error}`);
+    }
     resetFailureCounter(taskName);
     return true; // 已发送告警
   }
@@ -241,6 +247,71 @@ async function cleanupOldDataTask(): Promise<void> {
   }
 }
 
+/**
+ * 任务6：采集金店价格（每天7:30）
+ */
+async function collectGoldShopPricesTask(): Promise<void> {
+  const taskName = 'collectGoldShopPrices';
+
+  if (!acquireTaskLock(taskName)) {
+    return;
+  }
+
+  try {
+    console.log(`[${new Date().toISOString()}] 开始采集金店价格...`);
+
+    const { date, prices } = await fetchGoldShopPrices();
+
+    // 验证所有数据
+    const validPrices = prices.filter((price) => {
+      const isValid = validateGoldShopBrandPrice(price);
+      if (!isValid) {
+        console.warn(`数据验证失败，跳过: ${price.brandName}`);
+      }
+      return isValid;
+    });
+
+    if (validPrices.length > 0) {
+      await saveGoldShopPrices(date, validPrices);
+      resetFailureCounter(taskName);
+      console.log(`✓ 金店价格采集完成，共 ${validPrices.length} 家`);
+    } else {
+      await incrementFailureAndCheck(taskName, '没有有效的价格数据');
+    }
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    await incrementFailureAndCheck(taskName, errorMessage);
+  } finally {
+    releaseTaskLock(taskName);
+  }
+}
+
+/**
+ * 任务7：清理金店价格旧数据（每天凌晨2:05，在主数据清理后执行）
+ */
+async function cleanupShopPricesTask(): Promise<void> {
+  const taskName = 'cleanupShopPrices';
+
+  if (!acquireTaskLock(taskName)) {
+    return;
+  }
+
+  try {
+    console.log(`[${new Date().toISOString()}] 开始清理金店价格旧数据...`);
+
+    const retentionDays = parseInt(process.env.DATA_RETENTION_DAYS || '35', 10);
+    const deletedCount = await cleanupOldShopPrices(retentionDays);
+
+    console.log(`✓ 已清理 ${deletedCount} 条金店价格旧数据`);
+    resetFailureCounter(taskName);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    await incrementFailureAndCheck(taskName, errorMessage);
+  } finally {
+    releaseTaskLock(taskName);
+  }
+}
+
 // 存储已调度的任务（用于取消）
 const scheduledJobs = new Map<string, schedule.Job>();
 
@@ -283,6 +354,16 @@ export function initScheduler(): void {
   const cleanupJob = schedule.scheduleJob('0 2 * * *', cleanupOldDataTask);
   scheduledJobs.set('cleanupOldData', cleanupJob);
   console.log('✓ 已调度：数据清理任务（每天 2:00）');
+
+  // 任务6：每天7:30采集金店价格
+  const shopPriceJob = schedule.scheduleJob('0 30 7 * * *', collectGoldShopPricesTask);
+  scheduledJobs.set('collectGoldShopPrices', shopPriceJob);
+  console.log('✓ 已调度：金店价格采集任务（每天 7:30）');
+
+  // 任务7：每天凌晨2:05清理金店价格旧数据
+  const cleanupShopJob = schedule.scheduleJob('5 2 * * *', cleanupShopPricesTask);
+  scheduledJobs.set('cleanupShopPrices', cleanupShopJob);
+  console.log('✓ 已调度：金店价格清理任务（每天 2:05）');
 
   console.log('所有定时任务已启动！');
 }

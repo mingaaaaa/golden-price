@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Layout, Typography, Space } from 'antd';
 import StatCards from './components/StatCards';
 import GoldChart from './components/GoldChart';
+import GoldShopPrices from './components/GoldShopPrices';
 import AlertSettings from './components/AlertSettings';
 
 const { Header, Content } = Layout;
@@ -107,6 +108,9 @@ export default function DashboardPage() {
 
           {/* 图表 */}
           <GoldChart refreshTrigger={refreshTrigger} />
+
+          {/* 金店价格表格 */}
+          <GoldShopPrices />
 
           {/* 预警设置 */}
           <AlertSettings onConfigChange={handleConfigChange} />
