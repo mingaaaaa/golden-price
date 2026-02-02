@@ -6,6 +6,7 @@ export interface GoldPriceData {
   lowPrice: number;        // 最低价
   buyPrice: number;        // 买入价
   sellPrice: number;       // 卖出价
+  lastClose: number;       // 昨结算价
   changePercent: number;   // 涨跌幅（%）
   changeAmount: number;    // 涨跌额
   volume?: number;         // 成交量（可选）

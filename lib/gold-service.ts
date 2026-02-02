@@ -88,6 +88,7 @@ function parsePriceData(rawData: string): GoldPriceData | null {
       lowPrice,
       buyPrice,
       sellPrice,
+      lastClose,
       changePercent: parseFloat(changePercent.toFixed(2)),
       changeAmount: parseFloat(changeAmount.toFixed(2)),
       volume: isNaN(volume) ? undefined : volume,
@@ -148,6 +149,7 @@ export async function savePriceData(data: GoldPriceData): Promise<boolean> {
         lowPrice: data.lowPrice,
         buyPrice: data.buyPrice,
         sellPrice: data.sellPrice,
+        lastClose: data.lastClose,
         changePercent: data.changePercent,
         changeAmount: data.changeAmount,
         volume: data.volume,
@@ -203,6 +205,7 @@ export async function getHistoryData(
           MIN(lowPrice) as lowPrice,
           AVG(buyPrice) as buyPrice,
           AVG(sellPrice) as sellPrice,
+          AVG(lastClose) as lastClose,
           AVG(changePercent) as changePercent,
           AVG(changeAmount) as changeAmount
         FROM gold_price
@@ -221,6 +224,7 @@ export async function getHistoryData(
         lowPrice: parseFloat(item.lowPrice),
         buyPrice: parseFloat(item.buyPrice),
         sellPrice: parseFloat(item.sellPrice),
+        lastClose: parseFloat(item.lastClose),
         changePercent: parseFloat(item.changePercent),
         changeAmount: parseFloat(item.changeAmount),
       }));

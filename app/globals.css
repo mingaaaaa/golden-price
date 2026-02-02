@@ -17,3 +17,22 @@ body {
   margin: 0;
   padding: 0;
 }
+
+/* 数据更新动画 */
+@keyframes priceUpdateUp {
+  0% { color: #fff; }
+  50% { color: #cf1322; }
+  100% { color: #fff; }
+}
+
+@keyframes priceUpdateDown {
+  0% { color: #fff; }
+  50% { color: #3f8600; }
+  100% { color: #fff; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 0; }
+}
