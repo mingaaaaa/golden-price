@@ -114,6 +114,7 @@ async function sendHourlyReportTask(): Promise<void> {
         openPrice: 0, // 占位
         buyPrice: 0, // 占位
         sellPrice: 0, // 占位
+        lastClose: 0, // 占位
         collectedAt: new Date(),
       };
 
