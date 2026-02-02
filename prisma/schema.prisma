@@ -18,6 +18,7 @@ model GoldPrice {
   lowPrice      Float     // 最低价
   buyPrice      Float     // 买入价
   sellPrice     Float     // 卖出价
+  lastClose     Float     // 昨结算价
   changePercent Float     // 涨跌幅（%）
   changeAmount  Float     // 涨跌额
   volume        Int?      // 成交量（可选）
