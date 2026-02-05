@@ -31,12 +31,13 @@
     "axios": "^1.13.4",
     "cheerio": "1.0.0-rc.12",
     "dayjs": "^1.11.19",
-    "next": "14.2.0",
+    "next": "16.1.6",
     "node-schedule": "^2.1.1",
     "prisma": "5.22.0",
     "react": "18.3.0",
     "react-dom": "18.3.0",
-    "recharts": "^3.7.0"
+    "recharts": "^3.7.0",
+    "sass": "^1.97.3"
   },
   "devDependencies": {
     "@types/cheerio": "^1.0.0",
