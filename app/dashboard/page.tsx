@@ -122,13 +122,13 @@ export default function DashboardPage() {
           />
 
           {/* 图表 */}
-          {/* <GoldChart refreshTrigger={refreshTrigger} /> */}
+          <GoldChart refreshTrigger={refreshTrigger} />
 
           {/* 金店价格表格 */}
-          {/* <GoldShopPrices /> */}
+          <GoldShopPrices />
 
           {/* 预警设置 */}
-          {/* <AlertSettings onConfigChange={handleConfigChange} /> */}
+          <AlertSettings onConfigChange={handleConfigChange} />
 
           {/* 系统信息 */}
           <div className={styles.infoCard}>

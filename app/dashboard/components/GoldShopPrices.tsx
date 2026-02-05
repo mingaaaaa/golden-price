@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
-import { Card, Table, Tag, Spin, Empty, Button, Tooltip, message } from 'antd';
+import { useEffect, useState, useCallback } from 'react';
+import { Card, Table, Tag, Empty, Button, Tooltip, message } from 'antd';
 import { ReloadOutlined, CrownOutlined, FireOutlined, CloudDownloadOutlined } from '@ant-design/icons';
 import { GoldShopPriceRecord, GoldShopBrandPrice } from '@/types';
 import styles from './GoldShopPrices.module.scss';
@@ -94,7 +94,7 @@ export default function GoldShopPrices() {
       dataIndex: 'brandName',
       key: 'brandName',
       width: 160,
-      render: (text: string, record: GoldShopBrandPrice, index: number) => (
+      render: (text: string, _record: GoldShopBrandPrice, index: number) => (
         <div className={styles.brandCell}>
           {index < 3 && (
             <Tag color="gold" className={styles.topTag}>
@@ -239,7 +239,7 @@ export default function GoldShopPrices() {
           <Table
             columns={columns}
             dataSource={data.prices}
-            rowKey={(record) => record.brandName}
+            rowKey={(_, index) => `gold-shop-${index}`}
             pagination={false}
             size="middle"
             className={styles.table}
