@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { throttle } from 'lodash-es';
 import { Layout, Typography, Space } from 'antd';
 import styles from './page.module.scss';
 import StatCards from './components/StatCards';
@@ -15,22 +16,49 @@ const { Title } = Typography;
 export default function DashboardPage() {
   const [stats, setStats] = useState<GoldPriceData | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshSuccess, setRefreshSuccess] = useState(false);
 
   // 加载今日统计数据
-  const loadStats = async () => {
+  const loadStats = async (saveData: boolean = false) => {
     try {
-      // 使用实时价格API获取完整数据
-      const response = await fetch('/api/gold/realtime');
+      const url = saveData ? '/api/gold/realtime?save=true' : '/api/gold/realtime';
+      const response = await fetch(url);
       const result = await response.json();
 
       if (result.success && result.data) {
-        // 直接使用实时数据
         setStats(result.data);
       }
     } catch (error) {
       console.error('加载统计数据异常:', error);
     }
   };
+
+  // 使用节流包装刷新函数（2秒内只能执行一次）
+  // useMemo 是必须的，确保 throttle 函数实例稳定
+  const handleRefresh = useMemo(
+    () => throttle(async () => {
+      setRefreshing(true);
+      setRefreshSuccess(false);
+
+      try {
+        const url = '/api/gold/realtime?save=true';
+        const response = await fetch(url);
+        const result = await response.json();
+
+        if (result.success && result.data) {
+          setStats(result.data);
+          setRefreshSuccess(true);
+          setTimeout(() => setRefreshSuccess(false), 500);
+        }
+      } catch (error) {
+        console.error('刷新失败:', error);
+      } finally {
+        setRefreshing(false);
+      }
+    }, 2000, { leading: true, trailing: false }),
+    [] // 空依赖，因为 setStats 是稳定的
+  );
 
   const pollingTimerRef = useRef<NodeJS.Timeout | null>(null);
   // 定时轮询方法
@@ -44,7 +72,7 @@ export default function DashboardPage() {
     loadStats();
     // 设置定时器
     pollingTimerRef.current = setInterval(() => {
-      loadStats();
+      loadStats(false);
     }, interval);
     return pollingTimerRef.current;
   };
@@ -87,6 +115,9 @@ export default function DashboardPage() {
             openPrice={stats?.openPrice || 0}
             changeAmount={stats?.changeAmount || 0}
             changePercent={stats?.changePercent || 0}
+            onRefresh={handleRefresh}
+            refreshing={refreshing}
+            refreshSuccess={refreshSuccess}
           />
 
           {/* 图表 */}

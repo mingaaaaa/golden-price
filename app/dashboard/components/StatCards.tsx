@@ -12,6 +12,7 @@ import {
   ShoppingCartOutlined,
   TrophyOutlined,
   ThunderboltOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
 
 interface StatCardsProps {
@@ -25,6 +26,9 @@ interface StatCardsProps {
   changeAmount: number;
   changePercent: number;
   loading?: boolean;
+  onRefresh?: () => void;
+  refreshing?: boolean;
+  refreshSuccess?: boolean;
 }
 
 export default function StatCards({
@@ -38,6 +42,9 @@ export default function StatCards({
   changeAmount,
   changePercent,
   loading = false,
+  onRefresh,
+  refreshing = false,
+  refreshSuccess = false,
 }: StatCardsProps) {
   const isPositive = changePercent >= 0;
 
@@ -104,28 +111,120 @@ export default function StatCards({
           style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
+            justifyContent: 'space-between',
             gap: 8,
             marginBottom: 16,
+            position: 'relative',
           }}
         >
-          <FundOutlined
-            style={{
-              fontSize: 18,
-              color: '#d4a048',
-            }}
-          />
-          <div
-            style={{
-              fontSize: 15,
-              fontWeight: 600,
-              color: '#595959',
-              letterSpacing: '0.5px',
-              textTransform: 'uppercase',
-            }}
-          >
-            黄金实时价格 (AUTD)
+          {/* 左侧：标题和图标 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <FundOutlined
+              style={{
+                fontSize: 18,
+                color: '#d4a048',
+              }}
+            />
+            <div
+              style={{
+                fontSize: 15,
+                fontWeight: 600,
+                color: '#595959',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              黄金实时价格 (AUTD)
+            </div>
           </div>
+
+          {/* 右侧：刷新按钮 */}
+          {onRefresh && (
+            <button
+              onClick={onRefresh}
+              disabled={refreshing}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '8px 16px',
+                background: refreshing
+                  ? 'linear-gradient(90deg, rgba(212, 160, 72, 0.15) 0%, rgba(245, 217, 138, 0.2) 50%, rgba(212, 160, 72, 0.15) 100%)'
+                  : 'rgba(212, 160, 72, 0.08)',
+                backgroundSize: '200% 100%',
+                border: `1.5px solid ${refreshSuccess ? 'rgba(82, 196, 26, 0.6)' : 'rgba(212, 160, 72, 0.4)'}`,
+                borderRadius: 12,
+                cursor: refreshing ? 'not-allowed' : 'pointer',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                position: 'relative',
+                overflow: 'hidden',
+                boxShadow: refreshSuccess
+                  ? '0 4px 12px rgba(82, 196, 26, 0.25)'
+                  : '0 2px 8px rgba(212, 160, 72, 0.15)',
+                opacity: refreshing ? 0.7 : 1,
+                animation: refreshing ? 'shimmer 1.5s infinite' : 'none',
+              }}
+              onMouseEnter={(e) => {
+                if (!refreshing && !refreshSuccess) {
+                  e.currentTarget.style.background = 'rgba(212, 160, 72, 0.15)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 16px rgba(212, 160, 72, 0.35)';
+                  e.currentTarget.style.borderColor = 'rgba(212, 160, 72, 0.6)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!refreshing && !refreshSuccess) {
+                  e.currentTarget.style.background = 'rgba(212, 160, 72, 0.08)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(212, 160, 72, 0.15)';
+                  e.currentTarget.style.borderColor = 'rgba(212, 160, 72, 0.4)';
+                }
+              }}
+              onMouseDown={(e) => {
+                if (!refreshing && !refreshSuccess) {
+                  e.currentTarget.style.transform = 'translateY(0) scale(0.95)';
+                }
+              }}
+              onMouseUp={(e) => {
+                if (!refreshing && !refreshSuccess) {
+                  e.currentTarget.style.transform = 'translateY(-2px) scale(1)';
+                }
+              }}
+            >
+              {refreshSuccess ? (
+                <span
+                  style={{
+                    fontSize: 14,
+                    color: '#52c41a',
+                    fontWeight: 700,
+                  }}
+                >
+                  ✓
+                </span>
+              ) : (
+                <ReloadOutlined
+                  spin={refreshing}
+                  style={{
+                    fontSize: 14,
+                    color: refreshing ? '#d4a048' : '#b8863a',
+                  }}
+                />
+              )}
+
+              <span
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: refreshing ? '#d4a048' : refreshSuccess ? '#52c41a' : '#b8863a',
+                  letterSpacing: '0.3px',
+                }}
+              >
+                {refreshing ? '刷新中...' : refreshSuccess ? '已更新' : '刷新'}
+              </span>
+            </button>
+          )}
         </div>
 
         {/* 价格显示 */}
@@ -341,6 +440,15 @@ export default function StatCards({
           75%, 100% {
             transform: translate(-50%, -50%) scale(2);
             opacity: 0;
+          }
+        }
+
+        @keyframes shimmer {
+          0% {
+            background-position: -200% center;
+          }
+          100% {
+            background-position: 200% center;
           }
         }
 
