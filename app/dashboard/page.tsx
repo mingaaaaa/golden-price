@@ -115,6 +115,7 @@ export default function DashboardPage() {
             openPrice={stats?.openPrice || 0}
             changeAmount={stats?.changeAmount || 0}
             changePercent={stats?.changePercent || 0}
+            time={stats?.time}
             onRefresh={handleRefresh}
             refreshing={refreshing}
             refreshSuccess={refreshSuccess}

@@ -26,6 +26,7 @@ interface StatCardsProps {
   openPrice: number;
   changeAmount: number;
   changePercent: number;
+  time?: string;
   loading?: boolean;
   onRefresh?: () => void;
   refreshing?: boolean;
@@ -42,6 +43,7 @@ export default function StatCards({
   openPrice,
   changeAmount,
   changePercent,
+  time,
   loading = false,
   onRefresh,
   refreshing = false,
@@ -130,6 +132,13 @@ export default function StatCards({
             ({isPositive ? '+' : ''}{changePercent.toFixed(2)}%)
           </span>
         </div>
+
+        {/* 数据更新时间 */}
+        {time && (
+          <div className={styles.updateTime}>
+            数据更新时间：{new Date().toLocaleDateString('zh-CN')} {time}
+          </div>
+        )}
 
         {/* 动画指示器 */}
         {isAnimating && (
@@ -227,6 +236,7 @@ export default function StatCards({
             suffix="元/克"
             gradient={isPositive ? gradientCardUp : gradientCardDown}
             borderColor={isPositive ? 'rgba(207, 19, 34, 0.3)' : 'rgba(63, 134, 0, 0.3)'}
+            valueColor={isPositive ? '#cf1322' : '#3f8600'}
           />
         </Col>
 
@@ -240,6 +250,7 @@ export default function StatCards({
             suffix=""
             gradient={isPositive ? gradientCardUp : gradientCardDown}
             borderColor={isPositive ? 'rgba(207, 19, 34, 0.3)' : 'rgba(63, 134, 0, 0.3)'}
+            valueColor={isPositive ? '#cf1322' : '#3f8600'}
           />
         </Col>
       </Row>
@@ -256,9 +267,10 @@ interface StatCardProps {
   suffix: string;
   gradient: string;
   borderColor: string;
+  valueColor?: string;
 }
 
-function StatCard({ icon, iconColor, title, value, suffix, gradient, borderColor }: StatCardProps) {
+function StatCard({ icon, iconColor, title, value, suffix, gradient, borderColor, valueColor }: StatCardProps) {
   return (
     <div
       className={styles.statCard}
@@ -290,7 +302,14 @@ function StatCard({ icon, iconColor, title, value, suffix, gradient, borderColor
         </div>
 
         {/* 数值 */}
-        <div className={styles.statCardValue}>
+        <div
+          className={styles.statCardValue}
+          style={valueColor ? {
+            color: valueColor,
+            WebkitTextFillColor: valueColor,
+            background: 'none'
+          } as React.CSSProperties : undefined}
+        >
           {value}
         </div>
 

@@ -255,6 +255,16 @@ $gradient-card-down: linear-gradient(135deg, rgba(63, 134, 0, 0.08) 0%, rgba(115
   }
 }
 
+// 数据更新时间
+.updateTime {
+  margin-top: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: $text-light-gray;
+  opacity: 0.8;
+  letter-spacing: 0.3px;
+}
+
 // 动画指示器
 .animationIndicator {
   position: absolute;
