@@ -1,7 +1,18 @@
 import * as schedule from 'node-schedule';
 import { fetchRealtimePrice, savePriceData, getTodayStats, cleanupOldData } from './gold-service';
-import { fetchGoldShopPrices, saveGoldShopPrices, validateGoldShopBrandPrice, cleanupOldShopPrices } from './gold-shop-scraper';
-import { sendHourlyReport, sendDailyReport, sendAlert, sendErrorAlert, sendShopPriceAlert as sendShopPriceAlertDingTalk } from './dingtalk';
+import {
+  fetchGoldShopPrices,
+  saveGoldShopPrices,
+  validateGoldShopBrandPrice,
+  cleanupOldShopPrices,
+} from './gold-shop-scraper';
+import {
+  sendHourlyReport,
+  sendDailyReport,
+  sendAlert,
+  sendErrorAlert,
+  sendShopPriceAlert as sendShopPriceAlertDingTalk,
+} from './dingtalk';
 import { prisma } from './db';
 
 // 任务锁（简单的内存锁）
@@ -105,21 +116,21 @@ async function sendHourlyReportTask(): Promise<void> {
     const stats = await getTodayStats();
 
     if (stats) {
-      const priceData = {
-        price: stats.currentPrice,
-        highPrice: stats.highPrice,
-        lowPrice: stats.lowPrice,
-        changePercent: stats.changePercent,
-        changeAmount: stats.changeAmount,
-        openPrice: 0, // 占位
-        buyPrice: 0, // 占位
-        sellPrice: 0, // 占位
-        lastClose: 0, // 占位
-        time: new Date().toTimeString().slice(0, 8), // HH:MM:SS
-        collectedAt: new Date(),
-      };
+      // const priceData = {
+      //   price: stats.currentPrice,
+      //   highPrice: stats.highPrice,
+      //   lowPrice: stats.lowPrice,
+      //   changePercent: stats.changePercent,
+      //   changeAmount: stats.changeAmount,
+      //   openPrice: 0, // 占位
+      //   buyPrice: 0, // 占位
+      //   sellPrice: 0, // 占位
+      //   lastClose: 0, // 占位
+      //   time: new Date().toTimeString().slice(0, 8), // HH:MM:SS
+      //   collectedAt: new Date(),
+      // };
 
-      await sendHourlyReport(priceData);
+      await sendHourlyReport(stats);
       resetFailureCounter(taskName);
     } else {
       console.warn('没有今日数据，跳过小时报');

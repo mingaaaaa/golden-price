@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { prisma } from './db';
-import { GoldPriceData } from '@/types';
+import { GoldPriceData, TodayStats } from '@/types';
 
 // 接口配置
 const GOLD_API_URL = process.env.GOLD_API_URL || 'https://www.huilvbiao.com/api/gold_indexApi';
@@ -60,16 +60,16 @@ function parsePriceData(rawData: string): GoldPriceData | null {
     }
 
     // 解析字段（根据新浪财经API的实际格式）
-    const price = parseFloat(fields[0]);      // 最新价
-    const buyPrice = parseFloat(fields[1]);   // 买价（买一价）
-    const sellPrice = parseFloat(fields[2]);  // 卖价（卖一价）
-    const openPrice = parseFloat(fields[3]);  // 今开
-    const highPrice = parseFloat(fields[4]);  // 最高
-    const lowPrice = parseFloat(fields[5]);   // 最低
-    const time = fields[6];                   // 数据更新时间 HH:MM:SS
-    const lastClose = parseFloat(fields[7]);  // 昨收
+    const price = parseFloat(fields[0]); // 最新价
+    const buyPrice = parseFloat(fields[1]); // 买价（买一价）
+    const sellPrice = parseFloat(fields[2]); // 卖价（卖一价）
+    const openPrice = parseFloat(fields[3]); // 今开
+    const highPrice = parseFloat(fields[4]); // 最高
+    const lowPrice = parseFloat(fields[5]); // 最低
+    const time = fields[6]; // 数据更新时间 HH:MM:SS
+    const lastClose = parseFloat(fields[7]); // 昨收
     // fields[8] 结算价（暂不使用）
-    const volume = parseInt(fields[9], 10);   // 成交量
+    const volume = parseInt(fields[9], 10); // 成交量
     // fields[10][11] 涨跌额、涨跌幅（数据可能不准确，下面重新计算）
 
     // 计算涨跌额和涨跌幅
@@ -118,12 +118,7 @@ export function validatePriceData(data: GoldPriceData): boolean {
   }
 
   // 必填字段校验
-  if (
-    isNaN(data.price) ||
-    isNaN(data.openPrice) ||
-    isNaN(data.highPrice) ||
-    isNaN(data.lowPrice)
-  ) {
+  if (isNaN(data.price) || isNaN(data.openPrice) || isNaN(data.highPrice) || isNaN(data.lowPrice)) {
     console.error('必填字段缺失或无效');
     return false;
   }
@@ -178,7 +173,7 @@ export async function savePriceData(data: GoldPriceData): Promise<boolean> {
 export async function getHistoryData(
   startTime: Date,
   endTime: Date,
-  interval: 'raw' | 'hour' = 'raw'
+  interval: 'raw' | 'hour' = 'raw',
 ): Promise<GoldPriceData[]> {
   try {
     let data: any[];
@@ -266,11 +261,12 @@ export async function cleanupOldData(days: number = 35): Promise<number> {
 /**
  * 获取今日统计数据
  */
-export async function getTodayStats() {
+export async function getTodayStats(): Promise<TodayStats | null> {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    // 获取今天0点开始的所有记录
     const data = await prisma.goldPrice.findMany({
       where: {
         collectedAt: {
@@ -286,19 +282,28 @@ export async function getTodayStats() {
       return null;
     }
 
-    const prices = data.map((d) => d.price);
-    const highPrice = Math.max(...prices);
-    const lowPrice = Math.min(...prices);
-    const avgPrice = prices.reduce((sum, price) => sum + price, 0) / prices.length;
-    const latestData = data[data.length - 1];
+    const prices = data.map((d) => d.price); // 今天所有的价格
+    const dayHighPrice = Math.max(...prices); // 当天最高价
+    const dayLowPrice = Math.min(...prices); // 当天最低价
+    const avgPrice = prices.reduce((sum, price) => sum + price, 0) / prices.length; // 今日平均价
+    const latestData = data[data.length - 1]; // 最新一条数据
 
     return {
-      highPrice,
-      lowPrice,
-      avgPrice: parseFloat(avgPrice.toFixed(2)),
+      price: latestData.price,
+      openPrice: latestData.openPrice,
+      highPrice: latestData.highPrice,
+      lowPrice: latestData.lowPrice,
+      buyPrice: latestData.buyPrice,
+      sellPrice: latestData.sellPrice,
+      lastClose: latestData.lastClose,
       changePercent: latestData.changePercent,
       changeAmount: latestData.changeAmount,
-      currentPrice: latestData.price,
+      volume: latestData.volume ?? undefined,
+      time: 'time' in latestData ? (latestData.time as string) : '',
+      collectedAt: latestData.collectedAt,
+      dayHighPrice,
+      dayLowPrice,
+      avgPrice: parseFloat(avgPrice.toFixed(2)),
     };
   } catch (error) {
     console.error('获取今日统计失败:', error);

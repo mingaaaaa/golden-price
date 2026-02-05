@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { prisma } from './db';
-import { GoldPriceData, AlertConfigData, PushType } from '@/types';
+import { AlertConfigData, PushType, TodayStats } from '@/types';
 
 // 钉钉Webhook配置
 const DINGTALK_WEBHOOK = process.env.DINGTALK_WEBHOOK || '';
@@ -70,12 +70,16 @@ async function logPush(
 /**
  * 发送小时报
  */
-export async function sendHourlyReport(priceData: GoldPriceData): Promise<boolean> {
-  const content = `【黄金价格小时报】${priceData.collectedAt.getHours()}:00
-当前AUTD价格：${priceData.price} 元/克
-今日涨跌幅：${priceData.changePercent >= 0 ? '+' : ''}${priceData.changePercent.toFixed(2)}%（${priceData.changeAmount >= 0 ? '+' : ''}${priceData.changeAmount.toFixed(2)}元）
-今日最高：${priceData.highPrice} 元/克
-今日最低：${priceData.lowPrice} 元/克`;
+export async function sendHourlyReport(stats: TodayStats): Promise<boolean> {
+  const content = `【黄金价格小时报】${stats.collectedAt.getHours()}:00
+当前AUTD价格：${stats.price} 元/克
+最高价：${stats.highPrice} 元/克
+最低价：${stats.lowPrice} 元/克
+今日涨跌幅：${stats.changePercent >= 0 ? '+' : ''}${stats.changePercent.toFixed(2)}%（${stats.changeAmount >= 0 ? '+' : ''}${stats.changeAmount.toFixed(2)}元）
+今日最高：${stats.dayHighPrice} 元/克
+今日最低：${stats.dayLowPrice} 元/克
+今日平均：${stats.avgPrice} 元/克
+机构卖出价：${stats.sellPrice} 元/克`;
 
   const success = await sendDingTalkMessage(content);
   await logPush('hourly', content, success, success ? undefined : '发送失败');
