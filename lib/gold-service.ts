@@ -66,7 +66,7 @@ function parsePriceData(rawData: string): GoldPriceData | null {
     const openPrice = parseFloat(fields[3]);  // 今开
     const highPrice = parseFloat(fields[4]);  // 最高
     const lowPrice = parseFloat(fields[5]);   // 最低
-    const time = fields[6];                    // 时间 HH:MM:SS
+    const time = fields[6];                   // 数据更新时间 HH:MM:SS
     const lastClose = parseFloat(fields[7]);  // 昨收
     // fields[8] 结算价（暂不使用）
     const volume = parseInt(fields[9], 10);   // 成交量
@@ -92,6 +92,7 @@ function parsePriceData(rawData: string): GoldPriceData | null {
       changePercent: parseFloat(changePercent.toFixed(2)),
       changeAmount: parseFloat(changeAmount.toFixed(2)),
       volume: isNaN(volume) ? undefined : volume,
+      time, // API 返回的原始时间字符串
       collectedAt,
     };
   } catch (error) {
@@ -153,7 +154,8 @@ export async function savePriceData(data: GoldPriceData): Promise<boolean> {
         changePercent: data.changePercent,
         changeAmount: data.changeAmount,
         volume: data.volume,
-        collectedAt: data.collectedAt,
+        time: data.time, // API 返回的原始时间字符串
+        collectedAt: data.collectedAt, // 采集日期，数据库的唯一索引
       },
     });
 

@@ -5,17 +5,20 @@
 ## 🎯 核心功能
 
 - ✅ **数据采集**：每5分钟采集 AUTD 价格
+- ✅ **手动刷新**：支持手动刷新并保存数据到数据库（带节流保护）
 - ✅ **数据可视化**：时视图（近24h）、天视图（近35天）
 - ✅ **定时推送**：每小时整点推送（8:00-24:00）
 - ✅ **预警推送**：价格超过/低于目标价时推送
 - ✅ **日报推送**：每天24:00推送当日汇总
 - ✅ **异常告警**：接口连续失败3次推送通知
 - ✅ **数据清理**：每天凌晨2:00清理超过35天的数据
+- ✅ **数据库管理**：内置 Prisma Studio 可视化数据管理工具
 
 ## 🛠️ 技术栈
 
-- **框架**：Next.js 14 + TypeScript
+- **框架**：Next.js 16 + TypeScript
 - **UI库**：Ant Design + Recharts
+- **工具库**：lodash-es（节流/防抖）
 - **ORM**：Prisma + SQLite
 - **定时任务**：node-schedule
 - **HTTP客户端**：axios
@@ -63,8 +66,11 @@ pnpm dev
 ### 5. 测试接口
 
 ```bash
-# 测试实时金价
+# 测试实时金价（不保存数据）
 curl http://localhost:3000/api/gold/realtime
+
+# 测试实时金价（保存数据到数据库）
+curl http://localhost:3000/api/gold/realtime?save=true
 
 # 测试历史数据
 curl http://localhost:3000/api/gold/history?view=hour
@@ -75,6 +81,22 @@ curl http://localhost:3000/api/alert/config
 # 测试预警检查
 curl -X POST http://localhost:3000/api/alert/check
 ```
+
+### 6. 查看数据库（可选）
+
+**使用 Prisma Studio（推荐）：**
+
+```bash
+npx prisma studio
+```
+
+然后访问 http://localhost:5555 查看和管理数据库中的数据。
+
+**功能：**
+- 📊 可视化查看所有表（GoldPrice、PushLog、AlertConfig）
+- ✏️ 在线添加、编辑、删除记录
+- 🔍 支持搜索和过滤
+- 📄 分页浏览数据
 
 ## 🚀 生产部署
 
@@ -140,9 +162,12 @@ pnpm pm2:stop
 - `lowPrice`: 最低价
 - `buyPrice`: 买入价
 - `sellPrice`: 卖出价
+- `lastClose`: 昨结算价
 - `changePercent`: 涨跌幅（%）
 - `changeAmount`: 涨跌额
-- `collectedAt`: 采集时间（唯一索引）
+- `volume`: 成交量（可选）
+- `collectedAt`: 采集时间（唯一索引，防重）
+- `createdAt`: 创建时间
 
 #### AlertConfig（预警配置表）
 - `highPrice`: 高位预警价格
@@ -243,8 +268,18 @@ golden_price/
 
 **手动采集**：
 ```bash
+# 不保存数据
 curl http://localhost:3000/api/gold/realtime
+
+# 保存数据到数据库
+curl http://localhost:3000/api/gold/realtime?save=true
 ```
+
+**在页面中手动刷新**：
+1. 访问 http://localhost:3000/dashboard
+2. 点击首页卡片右上角的"刷新"按钮
+3. 数据会自动保存到数据库
+4. 刷新按钮带节流保护（2秒内只能点击一次）
 
 ### 4. 钉钉推送失败
 
@@ -268,7 +303,13 @@ curl http://localhost:3000/api/gold/realtime
    - 在数据库中查询 `PushLog` 表
 
 4. **手动触发采集**：
-   - 访问 http://localhost:3000/api/gold/realtime
+   - **方式一**：访问 http://localhost:3000/dashboard，点击"刷新"按钮
+   - **方式二**：调用 API `http://localhost:3000/api/gold/realtime?save=true`
+
+5. **查看数据库**：
+   - 运行 `npx prisma studio`
+   - 访问 http://localhost:5555
+   - 可视化查看所有数据表和记录
 
 ## 🔒 安全建议
 

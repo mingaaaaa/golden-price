@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Card, Table, Tag, Spin, Empty, Button, Tooltip, message } from 'antd';
 import { ReloadOutlined, CrownOutlined, FireOutlined, CloudDownloadOutlined } from '@ant-design/icons';
 import { GoldShopPriceRecord, GoldShopBrandPrice } from '@/types';
+import styles from './GoldShopPrices.module.scss';
 
 export default function GoldShopPrices() {
   const [data, setData] = useState<GoldShopPriceRecord | null>(null);
@@ -79,16 +80,9 @@ export default function GoldShopPrices() {
       render: (_: any, __: any, index: number) => {
         const isTop3 = index < 3;
         return (
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 4 }}>
-            {isTop3 && <CrownOutlined style={{ color: '#d4a048', fontSize: 14 }} />}
-            <span
-              style={{
-                fontWeight: isTop3 ? 700 : 500,
-                color: isTop3 ? '#d4a048' : '#8c8c8c',
-                fontSize: isTop3 ? 16 : 14,
-                fontFamily: isTop3 ? '"Playfair Display", serif' : 'inherit',
-              }}
-            >
+          <div className={styles.rankCell}>
+            {isTop3 && <CrownOutlined className={styles.rankIcon} />}
+            <span className={`${styles.rankNumber} ${isTop3 ? styles.top3 : ''}`}>
               {index + 1}
             </span>
           </div>
@@ -101,32 +95,13 @@ export default function GoldShopPrices() {
       key: 'brandName',
       width: 160,
       render: (text: string, record: GoldShopBrandPrice, index: number) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className={styles.brandCell}>
           {index < 3 && (
-            <Tag
-              color="gold"
-              style={{
-                margin: 0,
-                fontFamily: '"Playfair Display", serif',
-                fontWeight: 600,
-                fontSize: 12,
-                border: 'none',
-                boxShadow: '0 2px 8px rgba(212, 160, 72, 0.3)',
-              }}
-            >
+            <Tag color="gold" className={styles.topTag}>
               TOP{index + 1}
             </Tag>
           )}
-          <span
-            style={{
-              fontWeight: 600,
-              color: '#1a1a1a',
-              fontSize: 15,
-              fontFamily: '"Noto Serif SC", serif',
-            }}
-          >
-            {text}
-          </span>
+          <span className={styles.brandName}>{text}</span>
         </div>
       ),
     },
@@ -138,23 +113,11 @@ export default function GoldShopPrices() {
       sorter: (a: GoldShopBrandPrice, b: GoldShopBrandPrice) => a.goldPrice - b.goldPrice,
       defaultSortOrder: 'ascend' as const,
       render: (price: number, record: GoldShopBrandPrice, index: number) => (
-        <div>
-          <span
-            style={{
-              color: index < 3 ? '#d4a048' : '#cf1322',
-              fontWeight: index < 3 ? 700 : 600,
-              fontSize: index < 3 ? 17 : 16,
-            }}
-          >
+        <div className={styles.priceCell}>
+          <span className={`${styles.priceValue} ${index < 3 ? styles.top3 : styles.normal}`}>
             ¥{price.toFixed(2)}
           </span>
-          <div
-            style={{
-              fontSize: 11,
-              color: '#8c8c8c',
-              marginTop: 2,
-            }}
-          >
+          <div className={styles.priceUnit}>
             {record.unit}
           </div>
         </div>
@@ -216,56 +179,27 @@ export default function GoldShopPrices() {
   return (
     <Card
       title={
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 16,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <FireOutlined style={{ color: '#d4a048', fontSize: 20 }} />
-            <span
-              style={{
-                color: '#d4a048',
-                fontWeight: 700,
-                fontSize: 18,
-                fontFamily: '"Playfair Display", serif',
-                letterSpacing: '0.5px',
-              }}
-            >
+        <div className={styles.header}>
+          <div className={styles.headerLeft}>
+            <FireOutlined className={styles.headerIcon} />
+            <span className={styles.headerTitle}>
               各品牌金店价格
             </span>
           </div>
-          <div
-            style={{
-              padding: '4px 12px',
-              background: 'linear-gradient(135deg, rgba(212, 160, 72, 0.15) 0%, rgba(212, 160, 72, 0.05) 100%)',
-              border: '1px solid rgba(212, 160, 72, 0.3)',
-              borderRadius: 20,
-              fontSize: 12,
-              color: '#d4a048',
-              fontWeight: 500,
-            }}
-          >
+          <div className={styles.updateTag}>
             每日 7:30 更新
           </div>
         </div>
       }
       loading={loading}
       extra={
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div className={styles.headerRight}>
           <Tooltip title="手动采集最新金店价格">
             <Button
               icon={<CloudDownloadOutlined spin={collecting} />}
               onClick={handleCollect}
               disabled={collecting}
-              style={{
-                borderColor: 'rgba(82, 196, 26, 0.5)',
-                color: '#52c41a',
-                fontWeight: 500,
-              }}
+              className={styles.collectButton}
             >
               {collecting ? '采集中...' : '手动采集'}
             </Button>
@@ -275,26 +209,14 @@ export default function GoldShopPrices() {
               icon={<ReloadOutlined spin={refreshing} />}
               onClick={() => loadData(true)}
               disabled={refreshing}
-              style={{
-                borderColor: 'rgba(212, 160, 72, 0.5)',
-                color: '#d4a048',
-                fontWeight: 500,
-              }}
+              className={styles.refreshButton}
             >
               刷新
             </Button>
           </Tooltip>
         </div>
       }
-      style={{
-        background: 'rgba(255, 255, 255, 0.75)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        border: '1px solid rgba(212, 160, 72, 0.15)',
-        borderRadius: 20,
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
-        overflow: 'hidden',
-      }}
+      className={styles.card}
       styles={{
         body: { padding: '24px' },
         header: {
@@ -306,28 +228,11 @@ export default function GoldShopPrices() {
     >
       {data?.prices && data.prices.length > 0 ? (
         <>
-          <div
-            style={{
-              marginBottom: 20,
-              padding: '12px 16px',
-              background: 'linear-gradient(135deg, rgba(212, 160, 72, 0.1) 0%, rgba(212, 160, 72, 0.03) 100%)',
-              border: '1px solid rgba(212, 160, 72, 0.25)',
-              borderRadius: 12,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-            }}
-          >
-            <FireOutlined style={{ color: '#d4a048', fontSize: 16 }} />
-            <span
-              style={{
-                color: '#8c8c8c',
-                fontSize: 13,
-                fontWeight: 500,
-              }}
-            >
-              共 <strong style={{ color: '#d4a048' }}>{data.prices.length}</strong> 家金店价格数据
-              · 数据日期：<strong style={{ color: '#d4a048' }}>{data.date}</strong>
+          <div className={styles.infoBar}>
+            <FireOutlined className={styles.infoIcon} />
+            <span className={styles.infoText}>
+              共 <strong className={styles.infoHighlight}>{data.prices.length}</strong> 家金店价格数据
+              · 数据日期：<strong className={styles.infoHighlight}>{data.date}</strong>
             </span>
           </div>
 
@@ -337,11 +242,9 @@ export default function GoldShopPrices() {
             rowKey={(record) => record.brandName}
             pagination={false}
             size="middle"
-            style={{
-              background: 'transparent',
-            }}
+            className={styles.table}
             rowClassName={(_, index) =>
-              index < 3 ? 'top-rank-row' : ''
+              index < 3 ? styles.topRankRow : ''
             }
           />
         </>
@@ -349,89 +252,18 @@ export default function GoldShopPrices() {
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}
           description={
-            <div style={{ textAlign: 'center', padding: '40px 0' }}>
-              <div
-                style={{
-                  fontSize: 16,
-                  color: '#595959',
-                  marginBottom: 8,
-                  fontWeight: 500,
-                }}
-              >
+            <div className={styles.emptyState}>
+              <div className={styles.emptyTitle}>
                 暂无金店价格数据
               </div>
-              <div
-                style={{
-                  fontSize: 13,
-                  color: '#8c8c8c',
-                  lineHeight: '1.8',
-                }}
-              >
-                系统将在每天早上 <strong style={{ color: '#d4a048' }}>7:30</strong> 自动采集数据<br />
+              <div className={styles.emptyDesc}>
+                系统将在每天早上 <strong className={styles.emptyHighlight}>7:30</strong> 自动采集数据<br />
                 或点击右上角"刷新"按钮手动触发采集
               </div>
             </div>
           }
         />
       )}
-
-      <style jsx global>{`
-        .top-rank-row {
-          background: linear-gradient(
-            135deg,
-            rgba(212, 160, 72, 0.06) 0%,
-            rgba(212, 160, 72, 0.02) 100%
-          ) !important;
-          transition: all 0.3s ease;
-        }
-        .top-rank-row:hover {
-          background: linear-gradient(
-            135deg,
-            rgba(212, 160, 72, 0.12) 0%,
-            rgba(212, 160, 72, 0.04) 100%
-          ) !important;
-          transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(212, 160, 72, 0.15);
-        }
-        .top-rank-row td {
-          border-bottom: 1px solid rgba(212, 160, 72, 0.1) !important;
-        }
-
-        /* 自定义表格样式 */
-        .ant-table-thead > tr > th {
-          background: linear-gradient(
-            135deg,
-            rgba(212, 160, 72, 0.05) 0%,
-            rgba(212, 160, 72, 0.02) 100%
-          ) !important;
-          border-bottom: 2px solid rgba(212, 160, 72, 0.2) !important;
-          color: #595959 !important;
-          font-weight: 600 !important;
-          font-size: 13px !important;
-          padding: 14px 16px !important;
-        }
-
-        .ant-table-tbody > tr > td {
-          border-bottom: 1px solid rgba(0, 0, 0, 0.04) !important;
-          padding: 14px 16px !important;
-        }
-
-        .ant-table-tbody > tr:hover > td {
-          background: rgba(212, 160, 72, 0.03) !important;
-        }
-
-        .ant-pagination-item-active {
-          border-color: #d4a048 !important;
-          background: linear-gradient(135deg, #d4a048 0%, #b8863a 100%) !important;
-        }
-
-        .ant-pagination-item-active a {
-          color: white !important;
-        }
-
-        /* 引入 Google Fonts */
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
-      `}</style>
     </Card>
   );
 }

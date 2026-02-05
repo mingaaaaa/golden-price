@@ -22,6 +22,7 @@ model GoldPrice {
   changePercent Float     // 涨跌幅（%）
   changeAmount  Float     // 涨跌额
   volume        Int?      // 成交量（可选）
+  time          String    @default("") // 数据更新时间 HH:MM:SS
   collectedAt   DateTime @unique // 采集时间（唯一索引，防重）
   createdAt     DateTime @default(now())
 

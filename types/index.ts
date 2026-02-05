@@ -10,6 +10,7 @@ export interface GoldPriceData {
   changePercent: number;   // 涨跌幅（%）
   changeAmount: number;    // 涨跌额
   volume?: number;         // 成交量（可选）
+  time: string;            // 数据更新时间 HH:MM:SS
   collectedAt: Date;       // 采集时间
 }
 

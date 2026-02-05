@@ -103,7 +103,7 @@ export default function DashboardPage() {
         </div>
       </Header>
       <Content className={styles.content}>
-        <Space direction="vertical" size={32} className={styles.space}>
+        <Space orientation="vertical" size={32} className={styles.space}>
           {/* 统计卡片 */}
           <StatCards
             price={stats?.price || 0}

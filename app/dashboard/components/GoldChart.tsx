@@ -13,6 +13,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { GoldPriceData } from '@/types';
+import styles from './GoldChart.module.scss';
 
 interface GoldChartProps {
   refreshTrigger?: number;
@@ -76,49 +77,24 @@ export default function GoldChart({ refreshTrigger }: GoldChartProps) {
   return (
     <Card
       loading={loading}
-      style={{
-        background: 'rgba(255, 255, 255, 0.8)',
-        backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(0, 0, 0, 0.06)',
-        borderRadius: 16,
-        overflow: 'hidden',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-      }}
-      title={
-        <span style={{ color: '#d4a048', fontWeight: 600, fontSize: 16 }}>
-          价格走势
-        </span>
-      }
+      className={styles.card}
+      title={<span className={styles.header}>价格走势</span>}
       extra={
         <Radio.Group
           value={view}
           onChange={(e) => setView(e.target.value)}
-          style={{ background: '#f5f5f5', borderRadius: 8, padding: 2, border: '1px solid rgba(0, 0, 0, 0.06)' }}
+          className={styles.viewToggleGroup}
         >
-          <Radio.Button
-            value="hour"
-            style={{
-              background: view === 'hour' ? '#d4a048' : 'transparent',
-              borderColor: view === 'hour' ? '#d4a048' : 'transparent',
-              color: view === 'hour' ? '#fff' : '#595959',
-            }}
-          >
+          <Radio.Button value="hour" className={view === 'hour' ? styles.active : ''}>
             时视图（24h）
           </Radio.Button>
-          <Radio.Button
-            value="day"
-            style={{
-              background: view === 'day' ? '#d4a048' : 'transparent',
-              borderColor: view === 'day' ? '#d4a048' : 'transparent',
-              color: view === 'day' ? '#fff' : '#595959',
-            }}
-          >
+          <Radio.Button value="day" className={view === 'day' ? styles.active : ''}>
             天视图（35天）
           </Radio.Button>
         </Radio.Group>
       }
     >
-      <ResponsiveContainer width="100%" height={400}>
+      <ResponsiveContainer className={styles.chartContainer}>
         <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(0, 0, 0, 0.06)" />
           <XAxis

@@ -115,6 +115,7 @@ async function sendHourlyReportTask(): Promise<void> {
         buyPrice: 0, // 占位
         sellPrice: 0, // 占位
         lastClose: 0, // 占位
+        time: new Date().toTimeString().slice(0, 8), // HH:MM:SS
         collectedAt: new Date(),
       };
 

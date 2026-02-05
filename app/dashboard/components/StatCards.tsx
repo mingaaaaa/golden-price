@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Card, Row, Col } from 'antd';
+import styles from './StatCards.module.scss';
 import {
   FundOutlined,
   RiseOutlined,
@@ -63,77 +64,25 @@ export default function StatCards({
     }
   }, [price, prevPrice]);
 
-  const gradientGold = 'linear-gradient(135deg, #d4a048 0%, #f5d98a 50%, #d4a048 100%)';
   const gradientCardUp = 'linear-gradient(135deg, rgba(207, 19, 34, 0.08) 0%, rgba(255, 107, 107, 0.02) 100%)';
   const gradientCardDown = 'linear-gradient(135deg, rgba(63, 134, 0, 0.08) 0%, rgba(115, 209, 61, 0.02) 100%)';
 
   return (
     <Card
       loading={loading}
-      style={{
-        marginBottom: 32,
-        background: 'rgba(255, 255, 255, 0.85)',
-        backdropFilter: 'blur(24px)',
-        WebkitBackdropFilter: 'blur(24px)',
-        border: '1px solid rgba(212, 160, 72, 0.2)',
-        borderRadius: 24,
-        boxShadow: '0 8px 32px rgba(212, 160, 72, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08)',
-        overflow: 'hidden',
-        position: 'relative',
-      }}
+      className={styles.card}
     >
       {/* 背景装饰纹理 */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: `radial-gradient(circle at 20% 30%, rgba(212, 160, 72, 0.03) 0%, transparent 50%)`,
-          pointerEvents: 'none',
-          zIndex: 0,
-        }}
-      />
+      <div className={styles.backgroundDecoration} />
 
       {/* Header - Latest Price */}
-      <div
-        style={{
-          position: 'relative',
-          zIndex: 1,
-          textAlign: 'center',
-          padding: '40px 20px 32px',
-          background: `linear-gradient(180deg, rgba(212, 160, 72, 0.06) 0%, transparent 100%)`,
-        }}
-      >
+      <div className={styles.header}>
         {/* 标题 */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 8,
-            marginBottom: 16,
-            position: 'relative',
-          }}
-        >
+        <div className={styles.titleBar}>
           {/* 左侧：标题和图标 */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <FundOutlined
-              style={{
-                fontSize: 18,
-                color: '#d4a048',
-              }}
-            />
-            <div
-              style={{
-                fontSize: 15,
-                fontWeight: 600,
-                color: '#595959',
-                letterSpacing: '0.5px',
-                textTransform: 'uppercase',
-              }}
-            >
+          <div className={styles.titleLeft}>
+            <FundOutlined className={styles.titleIcon} />
+            <div className={styles.titleText}>
               黄金实时价格 (AUTD)
             </div>
           </div>
@@ -143,84 +92,18 @@ export default function StatCards({
             <button
               onClick={onRefresh}
               disabled={refreshing}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-                padding: '8px 16px',
-                background: refreshing
-                  ? 'linear-gradient(90deg, rgba(212, 160, 72, 0.15) 0%, rgba(245, 217, 138, 0.2) 50%, rgba(212, 160, 72, 0.15) 100%)'
-                  : 'rgba(212, 160, 72, 0.08)',
-                backgroundSize: '200% 100%',
-                border: `1.5px solid ${refreshSuccess ? 'rgba(82, 196, 26, 0.6)' : 'rgba(212, 160, 72, 0.4)'}`,
-                borderRadius: 12,
-                cursor: refreshing ? 'not-allowed' : 'pointer',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                backdropFilter: 'blur(8px)',
-                WebkitBackdropFilter: 'blur(8px)',
-                position: 'relative',
-                overflow: 'hidden',
-                boxShadow: refreshSuccess
-                  ? '0 4px 12px rgba(82, 196, 26, 0.25)'
-                  : '0 2px 8px rgba(212, 160, 72, 0.15)',
-                opacity: refreshing ? 0.7 : 1,
-                animation: refreshing ? 'shimmer 1.5s infinite' : 'none',
-              }}
-              onMouseEnter={(e) => {
-                if (!refreshing && !refreshSuccess) {
-                  e.currentTarget.style.background = 'rgba(212, 160, 72, 0.15)';
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 6px 16px rgba(212, 160, 72, 0.35)';
-                  e.currentTarget.style.borderColor = 'rgba(212, 160, 72, 0.6)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!refreshing && !refreshSuccess) {
-                  e.currentTarget.style.background = 'rgba(212, 160, 72, 0.08)';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(212, 160, 72, 0.15)';
-                  e.currentTarget.style.borderColor = 'rgba(212, 160, 72, 0.4)';
-                }
-              }}
-              onMouseDown={(e) => {
-                if (!refreshing && !refreshSuccess) {
-                  e.currentTarget.style.transform = 'translateY(0) scale(0.95)';
-                }
-              }}
-              onMouseUp={(e) => {
-                if (!refreshing && !refreshSuccess) {
-                  e.currentTarget.style.transform = 'translateY(-2px) scale(1)';
-                }
-              }}
+              className={`${styles.refreshButton} ${refreshing ? styles.refreshing : ''} ${refreshSuccess ? styles.success : ''}`}
             >
               {refreshSuccess ? (
-                <span
-                  style={{
-                    fontSize: 14,
-                    color: '#52c41a',
-                    fontWeight: 700,
-                  }}
-                >
-                  ✓
-                </span>
+                <span className={styles.successIcon}>✓</span>
               ) : (
                 <ReloadOutlined
                   spin={refreshing}
-                  style={{
-                    fontSize: 14,
-                    color: refreshing ? '#d4a048' : '#b8863a',
-                  }}
+                  className={`${styles.refreshIcon} ${refreshing ? styles.refreshing : ''}`}
                 />
               )}
 
-              <span
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: refreshing ? '#d4a048' : refreshSuccess ? '#52c41a' : '#b8863a',
-                  letterSpacing: '0.3px',
-                }}
-              >
+              <span className={`${styles.refreshText} ${refreshing ? styles.refreshing : ''} ${refreshSuccess ? styles.success : ''}`}>
                 {refreshing ? '刷新中...' : refreshSuccess ? '已更新' : '刷新'}
               </span>
             </button>
@@ -228,108 +111,34 @@ export default function StatCards({
         </div>
 
         {/* 价格显示 */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 4,
-            marginBottom: 16,
-          }}
-        >
-          <span
-            style={{
-              fontSize: 14,
-              fontWeight: 600,
-              color: '#8c8c8c',
-            }}
-          >
-            ¥
-          </span>
-          <div
-            style={{
-              fontSize: 68,
-              fontWeight: 800,
-              lineHeight: 1,
-              background: gradientGold,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              textShadow: '0 2px 12px rgba(212, 160, 72, 0.3)',
-              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              transform: isAnimating ? 'scale(1.02)' : 'scale(1)',
-            }}
-          >
+        <div className={styles.priceDisplay}>
+          <span className={styles.priceSymbol}>¥</span>
+          <div className={`${styles.priceValue} ${isAnimating ? styles.animating : ''}`}>
             {price.toFixed(2)}
           </div>
         </div>
 
         {/* 涨跌幅显示 */}
-        <div
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 12,
-            padding: '10px 24px',
-            borderRadius: 16,
-            background: isPositive ? gradientCardUp : gradientCardDown,
-            border: `1px solid ${isPositive ? 'rgba(207, 19, 34, 0.3)' : 'rgba(63, 134, 0, 0.3)'}`,
-            boxShadow: isPositive
-              ? '0 4px 16px rgba(207, 19, 34, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
-              : '0 4px 16px rgba(63, 134, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-          }}
-        >
-          <span
-            style={{
-              fontSize: 20,
-              fontWeight: 700,
-              color: isPositive ? '#cf1322' : '#3f8600',
-            }}
-          >
+        <div className={`${styles.changeDisplay} ${isPositive ? styles.up : styles.down}`}>
+          <span className={`${styles.changeArrow} ${isPositive ? styles.up : styles.down}`}>
             {isPositive ? '↑' : '↓'}
           </span>
-          <span
-            style={{
-              fontSize: 20,
-              fontWeight: 700,
-              color: isPositive ? '#cf1322' : '#3f8600',
-            }}
-          >
+          <span className={`${styles.changeValue} ${isPositive ? styles.up : styles.down}`}>
             {isPositive ? '+' : ''}{changeAmount.toFixed(2)}
           </span>
-          <span
-            style={{
-              fontSize: 14,
-              fontWeight: 500,
-              color: isPositive ? '#cf1322' : '#3f8600',
-              opacity: 0.85,
-            }}
-          >
+          <span className={`${styles.changePercent} ${isPositive ? styles.up : styles.down}`}>
             ({isPositive ? '+' : ''}{changePercent.toFixed(2)}%)
           </span>
         </div>
 
         {/* 动画指示器 */}
         {isAnimating && (
-          <div
-            style={{
-              position: 'absolute',
-              top: 12,
-              right: 12,
-              width: 12,
-              height: 12,
-              borderRadius: '50%',
-              background: priceDirection === 'up' ? '#cf1322' : '#3f8600',
-              boxShadow: `0 0 12px ${priceDirection === 'up' ? '#cf1322' : '#3f8600'}`,
-              animation: 'ping 1s cubic-bezier(0, 0, 0.2, 1) infinite',
-            }}
-          />
+          <div className={`${styles.animationIndicator} ${priceDirection === 'up' ? styles.up : styles.down}`} />
         )}
       </div>
 
       {/* Stats Grid */}
-      <Row gutter={[16, 16]} style={{ position: 'relative', zIndex: 1 }}>
+      <Row gutter={[16, 16]} className={styles.statsGrid}>
         {/* 最高价 */}
         <Col xs={12} sm={8} md={6}>
           <StatCard
@@ -434,54 +243,6 @@ export default function StatCards({
           />
         </Col>
       </Row>
-
-      <style jsx global>{`
-        @keyframes ping {
-          75%, 100% {
-            transform: translate(-50%, -50%) scale(2);
-            opacity: 0;
-          }
-        }
-
-        @keyframes shimmer {
-          0% {
-            background-position: -200% center;
-          }
-          100% {
-            background-position: 200% center;
-          }
-        }
-
-        .stat-card {
-          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-          transform-style: preserve-3d;
-        }
-
-        .stat-card:hover {
-          transform: translateY(-4px) scale(1.02);
-          box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
-        }
-
-        .stat-card-icon {
-          transition: all 0.3s ease;
-        }
-
-        .stat-card:hover .stat-card-icon {
-          transform: scale(1.1) rotate(5deg);
-        }
-
-        .stat-card-value {
-          background: linear-gradient(135deg, #1a1a1a 0%, #595959 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          transition: all 0.3s ease;
-        }
-
-        .stat-card:hover .stat-card-value {
-          transform: scale(1.05);
-        }
-      `}</style>
     </Card>
   );
 }
@@ -500,69 +261,22 @@ interface StatCardProps {
 function StatCard({ icon, iconColor, title, value, suffix, gradient, borderColor }: StatCardProps) {
   return (
     <div
-      className="stat-card"
+      className={styles.statCard}
       style={{
-        position: 'relative',
-        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
+        '--card-gradient': gradient,
         border: `1px solid ${borderColor}`,
-        borderRadius: 16,
-        padding: '20px 16px',
-        textAlign: 'center',
-        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        cursor: 'default',
-        overflow: 'hidden',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
-        height: '100%',
-        minHeight: 148,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.background = gradient;
-        e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
-        e.currentTarget.style.boxShadow = '0 12px 28px rgba(0, 0, 0, 0.15)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%)';
-        e.currentTarget.style.transform = 'translateY(0) scale(1)';
-        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.08)';
-      }}
+      } as React.CSSProperties}
     >
       {/* 装饰背景 */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: gradient,
-          opacity: 0,
-          transition: 'opacity 0.3s ease',
-          zIndex: 0,
-        }}
-        className="stat-card-bg"
-      />
+      <div className={styles.backgroundDecoration} style={{ background: gradient }} />
 
       {/* 内容区域 */}
-      <div style={{ position: 'relative', zIndex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div className={styles.statCardContent}>
         {/* 图标 */}
         <div
           className="stat-card-icon"
           style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 48,
-            height: 48,
-            borderRadius: 14,
             background: `${iconColor}15`,
-            marginBottom: 12,
-            fontSize: 20,
             color: iconColor,
             boxShadow: `0 2px 8px ${iconColor}30`,
           }}
@@ -571,43 +285,17 @@ function StatCard({ icon, iconColor, title, value, suffix, gradient, borderColor
         </div>
 
         {/* 标题 */}
-        <div
-          style={{
-            fontSize: 12,
-            fontWeight: 600,
-            color: '#8c8c8c',
-            marginBottom: 8,
-            letterSpacing: '0.5px',
-            textTransform: 'uppercase',
-          }}
-        >
+        <div className={styles.statCardTitle}>
           {title}
         </div>
 
         {/* 数值 */}
-        <div
-          className="stat-card-value"
-          style={{
-            fontSize: 24,
-            fontWeight: 700,
-            marginBottom: 4,
-          }}
-        >
+        <div className={styles.statCardValue}>
           {value}
         </div>
 
         {/* 单位（始终占据空间，保持卡片高度一致） */}
-        <div
-          style={{
-            fontSize: 11,
-            fontWeight: 500,
-            color: '#8c8c8c',
-            minHeight: 16,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
+        <div className={styles.statCardUnit}>
           {suffix || '\u00A0'}
         </div>
       </div>
