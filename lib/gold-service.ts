@@ -66,7 +66,7 @@ function parsePriceData(rawData: string): GoldPriceData | null {
     const openPrice = parseFloat(fields[3]); // 今开
     const highPrice = parseFloat(fields[4]); // 最高
     const lowPrice = parseFloat(fields[5]); // 最低
-    const time = fields[6]; // 数据更新时间 HH:MM:SS
+    const time = fields[6]; // 数据更新时间 HH:MM:SS  东八区时间
     const lastClose = parseFloat(fields[7]); // 昨收
     // fields[8] 结算价（暂不使用）
     const volume = parseInt(fields[9], 10); // 成交量
@@ -76,10 +76,19 @@ function parsePriceData(rawData: string): GoldPriceData | null {
     const changeAmount = price - lastClose;
     const changePercent = lastClose > 0 ? (changeAmount / lastClose) * 100 : 0;
 
-    // 构建采集时间（今天的日期 + 接口返回的时间）
-    const collectedAt = new Date();
-    const [hours, minutes, seconds] = time.split(':');
-    collectedAt.setHours(parseInt(hours, 10), parseInt(minutes, 10), parseInt(seconds, 10), 0);
+    // 构建采集时间（API 返回的是东八区时间，需要转换为 UTC 存储）
+    const now = new Date();
+    const [hours, minutes, seconds] = time.split(':').map(Number);
+
+    // 东八区时间转 UTC：减去 8 小时
+    const collectedAt = new Date(Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate(),
+      hours - 8, // 东八区转 UTC
+      minutes,
+      seconds
+    ));
 
     return {
       price,
@@ -239,8 +248,14 @@ export async function getHistoryData(
  */
 export async function cleanupOldData(days: number = 35): Promise<number> {
   try {
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - days);
+    // 使用 UTC 时间计算截止日期
+    const now = new Date();
+    const cutoffDate = new Date(Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate() - days,
+      0, 0, 0
+    ));
 
     const result = await prisma.goldPrice.deleteMany({
       where: {
@@ -263,8 +278,16 @@ export async function cleanupOldData(days: number = 35): Promise<number> {
  */
 export async function getTodayStats(): Promise<TodayStats | null> {
   try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // 获取东八区今天的 0 点对应的 UTC 时间
+    const now = new Date();
+    const today = new Date(Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate(),
+      -8, // 东八区 0 点 = UTC 前一天 16 点
+      0,
+      0
+    ));
 
     // 获取今天0点开始的所有记录
     const data = await prisma.goldPrice.findMany({

@@ -156,6 +156,7 @@ async function sendDailyReportTask(): Promise<void> {
   try {
     console.log(`[${new Date().toISOString()}] 开始发送日报...`);
 
+    // 使用当前日期，sendDailyReport 内部会转换为 UTC 处理
     const today = new Date();
     await sendDailyReport(today);
     resetFailureCounter(taskName);

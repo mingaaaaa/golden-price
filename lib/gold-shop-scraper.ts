@@ -160,7 +160,7 @@ export async function saveGoldShopPrices(date: string, prices: GoldShopBrandPric
       where: { date },
       update: {
         prices: pricesJson, // JSON字符串
-        collectedAt: new Date(),
+        collectedAt: new Date(), // Prisma 会自动转换为 UTC
       },
       create: {
         date,
@@ -242,9 +242,14 @@ export async function getLatestGoldShopPrices(): Promise<GoldShopPriceRecord | n
  */
 export async function getBrandHistory(brandName: string, days: number): Promise<Array<{ date: string; price: GoldShopBrandPrice | null }>> {
   try {
-    // 计算时间范围
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
+    // 计算时间范围（使用 UTC 时间）
+    const now = new Date();
+    const startDate = new Date(Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate() - days,
+      0, 0, 0
+    ));
 
     const records = await prisma.goldShopPrice.findMany({
       where: {
@@ -280,8 +285,14 @@ export async function getBrandHistory(brandName: string, days: number): Promise<
  */
 export async function cleanupOldShopPrices(retentionDays: number): Promise<number> {
   try {
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
+    // 使用 UTC 时间计算截止日期
+    const now = new Date();
+    const cutoffDate = new Date(Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate() - retentionDays,
+      0, 0, 0
+    ));
 
     const result = await prisma.goldShopPrice.deleteMany({
       where: {

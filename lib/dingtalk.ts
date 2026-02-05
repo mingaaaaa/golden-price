@@ -71,7 +71,9 @@ async function logPush(
  * 发送小时报
  */
 export async function sendHourlyReport(stats: TodayStats): Promise<boolean> {
-  const content = `【黄金价格小时报】${stats.collectedAt.getHours()}:00
+  // collectedAt 存储的是 UTC 时间，需要转换为东八区时间
+  const chinaHour = (stats.collectedAt.getUTCHours() + 8) % 24;
+  const content = `【黄金价格小时报】${chinaHour}:00
 当前AUTD价格：${stats.price} 元/克
 最高价：${stats.highPrice} 元/克
 最低价：${stats.lowPrice} 元/克
@@ -114,11 +116,23 @@ AUTD价格${alertType === 'high' ? '突破' : '跌破'}目标价！
  */
 export async function sendDailyReport(date: Date): Promise<boolean> {
   try {
-    // 获取当天的所有数据
-    const startTime = new Date(date);
-    startTime.setHours(0, 0, 0, 0);
-    const endTime = new Date(date);
-    endTime.setHours(23, 59, 59, 999);
+    // 获取当天的所有数据（使用 UTC 时间，对应东八区的当天）
+    const startTime = new Date(Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate(),
+      -8, // 东八区 0 点 = UTC 前一天 16 点
+      0,
+      0
+    ));
+    const endTime = new Date(Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate(),
+      15, // 东八区 23:59:59 = UTC 当天 15:59:59
+      59,
+      59
+    ));
 
     const data = await prisma.goldPrice.findMany({
       where: {
