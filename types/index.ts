@@ -60,4 +60,5 @@ export interface TodayStats extends GoldPriceData {
   dayHighPrice: number; // 当天最高价（统计得出）
   dayLowPrice: number; // 当天最低价（统计得出）
   avgPrice: number; // 当天平均价（统计得出）
+  createdAt: Date; // 记录创建时间
 }

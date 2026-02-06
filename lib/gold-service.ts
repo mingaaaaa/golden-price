@@ -80,15 +80,17 @@ function parsePriceData(rawData: string): GoldPriceData | null {
     const now = new Date();
     const [hours, minutes, seconds] = time.split(':').map(Number);
 
-    // 东八区时间转 UTC：减去 8 小时
-    const collectedAt = new Date(Date.UTC(
-      now.getUTCFullYear(),
-      now.getUTCMonth(),
-      now.getUTCDate(),
-      hours - 8, // 东八区转 UTC
-      minutes,
-      seconds
-    ));
+    // 当前日期+数据采集时间，因为时间是东八区所以要减去8h转UTC
+    const collectedAt = new Date(
+      Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate(),
+        hours - 8, // 东八区转 UTC
+        minutes,
+        seconds,
+      ),
+    );
 
     return {
       price,
@@ -191,20 +193,20 @@ export async function getHistoryData(
       // 原始数据（每5分钟一个点）
       data = await prisma.goldPrice.findMany({
         where: {
-          collectedAt: {
+          createdAt: {
             gte: startTime,
             lte: endTime,
           },
         },
         orderBy: {
-          collectedAt: 'asc',
+          createdAt: 'asc',
         },
       });
     } else {
       // 按小时聚合（用于天视图）
       data = await prisma.$queryRaw`
         SELECT
-          strftime('%Y-%m-%d %H:00:00', collected_at) as collectedAt,
+          strftime('%Y-%m-%d %H:00:00', collected_at) as createdAt,
           AVG(price) as price,
           AVG(openPrice) as openPrice,
           MAX(highPrice) as highPrice,
@@ -223,7 +225,7 @@ export async function getHistoryData(
       // 转换Date对象
       data = data.map((item: any) => ({
         ...item,
-        collectedAt: new Date(item.collectedAt),
+        createdAt: new Date(item.createdAt),
         price: parseFloat(item.price),
         openPrice: parseFloat(item.openPrice),
         highPrice: parseFloat(item.highPrice),
@@ -250,16 +252,11 @@ export async function cleanupOldData(days: number = 35): Promise<number> {
   try {
     // 使用 UTC 时间计算截止日期
     const now = new Date();
-    const cutoffDate = new Date(Date.UTC(
-      now.getUTCFullYear(),
-      now.getUTCMonth(),
-      now.getUTCDate() - days,
-      0, 0, 0
-    ));
+    const cutoffDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - days, 0, 0, 0));
 
     const result = await prisma.goldPrice.deleteMany({
       where: {
-        collectedAt: {
+        createdAt: {
           lt: cutoffDate,
         },
       },
@@ -280,24 +277,26 @@ export async function getTodayStats(): Promise<TodayStats | null> {
   try {
     // 获取东八区今天的 0 点对应的 UTC 时间
     const now = new Date();
-    const today = new Date(Date.UTC(
-      now.getUTCFullYear(),
-      now.getUTCMonth(),
-      now.getUTCDate(),
-      -8, // 东八区 0 点 = UTC 前一天 16 点
-      0,
-      0
-    ));
+    const today = new Date(
+      Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate(),
+        -8, // 东八区 0 点 = UTC 前一天 16 点
+        0,
+        0,
+      ),
+    );
 
     // 获取今天0点开始的所有记录
     const data = await prisma.goldPrice.findMany({
       where: {
-        collectedAt: {
+        createdAt: {
           gte: today,
         },
       },
       orderBy: {
-        collectedAt: 'asc',
+        createdAt: 'asc',
       },
     });
 
@@ -323,7 +322,8 @@ export async function getTodayStats(): Promise<TodayStats | null> {
       changeAmount: latestData.changeAmount,
       volume: latestData.volume ?? undefined,
       time: 'time' in latestData ? (latestData.time as string) : '',
-      collectedAt: latestData.collectedAt,
+      collectedAt: latestData.collectedAt, // 数据采集时间(接口数据更新的时间)
+      createdAt: latestData.createdAt, // 创建时间
       dayHighPrice,
       dayLowPrice,
       avgPrice: parseFloat(avgPrice.toFixed(2)),

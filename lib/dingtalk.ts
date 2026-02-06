@@ -47,12 +47,7 @@ async function sendDingTalkMessage(content: string): Promise<boolean> {
 /**
  * 记录推送日志到数据库
  */
-async function logPush(
-  type: PushType,
-  content: string,
-  success: boolean,
-  error?: string
-): Promise<void> {
+async function logPush(type: PushType, content: string, success: boolean, error?: string): Promise<void> {
   try {
     await prisma.pushLog.create({
       data: {
@@ -72,7 +67,7 @@ async function logPush(
  */
 export async function sendHourlyReport(stats: TodayStats): Promise<boolean> {
   // collectedAt 存储的是 UTC 时间，需要转换为东八区时间
-  const chinaHour = (stats.collectedAt.getUTCHours() + 8) % 24;
+  const chinaHour = (stats.createdAt.getUTCHours() + 8) % 24;
   const content = `【黄金价格小时报】${chinaHour}:00
 当前AUTD价格：${stats.price} 元/克
 最高价：${stats.highPrice} 元/克
@@ -81,7 +76,8 @@ export async function sendHourlyReport(stats: TodayStats): Promise<boolean> {
 今日最高：${stats.dayHighPrice} 元/克
 今日最低：${stats.dayLowPrice} 元/克
 今日平均：${stats.avgPrice} 元/克
-机构卖出价：${stats.sellPrice} 元/克`;
+机构卖出价：${stats.sellPrice} 元/克
+数据采集时间：${stats.collectedAt.toLocaleString('zh-CN', { hour12: false })}`;
 
   const success = await sendDingTalkMessage(content);
   await logPush('hourly', content, success, success ? undefined : '发送失败');
@@ -95,7 +91,7 @@ export async function sendHourlyReport(stats: TodayStats): Promise<boolean> {
 export async function sendAlert(
   currentPrice: number,
   alertConfig: AlertConfigData,
-  alertType: 'high' | 'low'
+  alertType: 'high' | 'low',
 ): Promise<boolean> {
   const targetPrice = alertType === 'high' ? alertConfig.highPrice! : alertConfig.lowPrice!;
 
@@ -117,22 +113,26 @@ AUTD价格${alertType === 'high' ? '突破' : '跌破'}目标价！
 export async function sendDailyReport(date: Date): Promise<boolean> {
   try {
     // 获取当天的所有数据（使用 UTC 时间，对应东八区的当天）
-    const startTime = new Date(Date.UTC(
-      date.getUTCFullYear(),
-      date.getUTCMonth(),
-      date.getUTCDate(),
-      -8, // 东八区 0 点 = UTC 前一天 16 点
-      0,
-      0
-    ));
-    const endTime = new Date(Date.UTC(
-      date.getUTCFullYear(),
-      date.getUTCMonth(),
-      date.getUTCDate(),
-      15, // 东八区 23:59:59 = UTC 当天 15:59:59
-      59,
-      59
-    ));
+    const startTime = new Date(
+      Date.UTC(
+        date.getUTCFullYear(),
+        date.getUTCMonth(),
+        date.getUTCDate(),
+        -8, // 东八区 0 点 = UTC 前一天 16 点
+        0,
+        0,
+      ),
+    );
+    const endTime = new Date(
+      Date.UTC(
+        date.getUTCFullYear(),
+        date.getUTCMonth(),
+        date.getUTCDate(),
+        15, // 东八区 23:59:59 = UTC 当天 15:59:59
+        59,
+        59,
+      ),
+    );
 
     const data = await prisma.goldPrice.findMany({
       where: {
