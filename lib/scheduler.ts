@@ -349,10 +349,10 @@ export function initScheduler(): void {
   scheduledJobs.set('collectGoldPrice', collectJob);
   console.log('✓ 已调度：采集金价任务（每5分钟）');
 
-  // 任务2：每小时推送（8:00-23:00）
-  const hourlyJob = schedule.scheduleJob('0 8-23 * * *', sendHourlyReportTask);
+  // 任务2：每小时推送（8:01-23:01，整点后1分钟）
+  const hourlyJob = schedule.scheduleJob('1 8-23 * * *', sendHourlyReportTask);
   scheduledJobs.set('sendHourlyReport', hourlyJob);
-  console.log('✓ 已调度：小时报任务（8:00-23:00 每小时）');
+  console.log('✓ 已调度：小时报任务（8:01-23:01 每小时）');
 
   // 任务3：每日日报（24:00）
   const dailyJob = schedule.scheduleJob('0 0 * * *', sendDailyReportTask);
