@@ -66,8 +66,10 @@ async function logPush(type: PushType, content: string, success: boolean, error?
  * 发送小时报
  */
 export async function sendHourlyReport(stats: TodayStats): Promise<boolean> {
-  // collectedAt 存储的是 UTC 时间，需要转换为东八区时间
-  const chinaHour = (stats.createdAt.getUTCHours() + 8) % 24;
+  // 使用发送消息时的北京时间
+  const now = new Date();
+  const chinaHour = (now.getUTCHours() + 8) % 24;
+  // 数据库的数据可能不更新，所以这里的时间直接使用发送消息的时间
   const content = `【黄金价格小时报】${chinaHour}:00
 当前AUTD价格：${stats.price} 元/克
 最高价：${stats.highPrice} 元/克
